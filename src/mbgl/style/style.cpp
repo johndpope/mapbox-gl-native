@@ -43,8 +43,7 @@ Style::Style(FileSource& fileSource_, float pixelRatio)
       spriteStore(std::make_unique<SpriteStore>(pixelRatio)),
       spriteAtlas(std::make_unique<SpriteAtlas>(1024, 1024, pixelRatio, *spriteStore)),
       lineAtlas(std::make_unique<LineAtlas>(256, 512)),
-      observer(&nullObserver),
-      workers(4) {
+      observer(&nullObserver) {
     glyphStore->setObserver(this);
     spriteStore->setObserver(this);
 }
@@ -209,19 +208,8 @@ double Style::getDefaultPitch() const {
 }
 
 void Style::updateTiles(const UpdateParameters& parameters) {
-    bool allTilesUpdated = true;
-
     for (const auto& source : sources) {
-        source->baseImpl->loadTiles(parameters);
-        if (!source->baseImpl->parseTiles(parameters)) {
-            allTilesUpdated = false;
-        }
-    }
-
-    // We can only stop updating "partial" tiles when all of them
-    // were notified of the arrival of the new resources.
-    if (allTilesUpdated) {
-        shouldReparsePartialTiles = false;
+        source->baseImpl->updateTiles(parameters);
     }
 }
 
@@ -229,7 +217,7 @@ void Style::relayout() {
     for (const auto& sourceID : updateBatch.sourceIDs) {
         Source* source = getSource(sourceID);
         if (!source) continue;
-        source->baseImpl->reload();
+        source->baseImpl->reloadTiles();
     }
     updateBatch.sourceIDs.clear();
 }
@@ -443,7 +431,6 @@ void Style::setObserver(style::Observer* observer_) {
 }
 
 void Style::onGlyphsLoaded(const FontStack& fontStack, const GlyphRange& glyphRange) {
-    shouldReparsePartialTiles = true;
     observer->onGlyphsLoaded(fontStack, glyphRange);
     observer->onUpdate(Update::Repaint);
 }
@@ -469,12 +456,8 @@ void Style::onSourceError(Source& source, std::exception_ptr error) {
     observer->onResourceError(error);
 }
 
-void Style::onTileLoaded(Source& source, const OverscaledTileID& tileID, TileLoadState loadState) {
-    if (loadState == TileLoadState::First) {
-        shouldReparsePartialTiles = true;
-    }
-
-    observer->onTileLoaded(source, tileID, loadState);
+void Style::onTileChanged(Source& source, const OverscaledTileID& tileID) {
+    observer->onTileChanged(source, tileID);
     observer->onUpdate(Update::Repaint);
 }
 
@@ -486,12 +469,7 @@ void Style::onTileError(Source& source, const OverscaledTileID& tileID, std::exc
     observer->onResourceError(error);
 }
 
-void Style::onTileUpdated(Source&, const OverscaledTileID&) {
-    observer->onUpdate(Update::Repaint);
-}
-
 void Style::onSpriteLoaded() {
-    shouldReparsePartialTiles = true;
     observer->onSpriteLoaded();
     observer->onUpdate(Update::Repaint);
 }

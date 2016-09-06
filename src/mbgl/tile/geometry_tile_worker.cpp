@@ -1,6 +1,7 @@
-#include <mbgl/text/collision_tile.hpp>
-#include <mbgl/tile/tile_worker.hpp>
+#include <mbgl/tile/geometry_tile_worker.hpp>
 #include <mbgl/tile/geometry_tile_data.hpp>
+#include <mbgl/tile/geometry_tile.hpp>
+#include <mbgl/text/collision_tile.hpp>
 #include <mbgl/layout/symbol_layout.hpp>
 #include <mbgl/style/bucket_parameters.hpp>
 #include <mbgl/style/layers/symbol_layer.hpp>
@@ -19,47 +20,61 @@ namespace mbgl {
 
 using namespace style;
 
-TileWorker::TileWorker(OverscaledTileID id_,
-                       SpriteStore& spriteStore_,
-                       GlyphAtlas& glyphAtlas_,
-                       GlyphStore& glyphStore_,
-                       const std::atomic<bool>& obsolete_,
-                       const MapMode mode_)
+GeometryTileWorker::GeometryTileWorker(OverscaledTileID id_,
+                                       SpriteStore& spriteStore_,
+                                       GlyphAtlas& glyphAtlas_,
+                                       GlyphStore& glyphStore_,
+                                       const std::atomic<bool>& obsolete_,
+                                       const MapMode mode_,
+                                       ActorRef<GeometryTile> tile_)
     : id(std::move(id_)),
       spriteStore(spriteStore_),
       glyphAtlas(glyphAtlas_),
       glyphStore(glyphStore_),
       obsolete(obsolete_),
-      mode(mode_) {
+      mode(mode_),
+      tile(tile_) {
 }
 
-TileWorker::~TileWorker() {
+GeometryTileWorker::~GeometryTileWorker() {
     glyphAtlas.removeGlyphs(reinterpret_cast<uintptr_t>(this));
 }
 
-TileParseResult TileWorker::parseAllLayers(std::vector<std::unique_ptr<Layer>> layers_,
-                                           std::unique_ptr<const GeometryTileData> tileData_,
-                                           const PlacementConfig& config) {
-    tileData = std::move(tileData_);
-    return redoLayout(std::move(layers_), config);
+void GeometryTileWorker::setData(std::unique_ptr<const GeometryTileData> data_) {
+    data = std::move(data_);
+    redoLayout();
 }
 
-TileParseResult TileWorker::redoLayout(std::vector<std::unique_ptr<Layer>> layers_,
-                                       const PlacementConfig& config) {
+void GeometryTileWorker::setLayers(std::vector<std::unique_ptr<Layer>> layers_) {
     layers = std::move(layers_);
+    redoLayout();
+}
+
+void GeometryTileWorker::setPlacementConfig(PlacementConfig placementConfig_) {
+    if (placementConfig == placementConfig_) {
+        return;
+    }
+    placementConfig = std::move(placementConfig_);
+    attemptPlacement();
+}
+
+void GeometryTileWorker::redoLayout() {
+    if (!data || !layers) {
+        return;
+    }
 
     // We're doing a fresh parse of the tile, because the underlying data or style has changed.
-    featureIndex = std::make_unique<FeatureIndex>();
     symbolLayouts.clear();
 
     // We're storing a set of bucket names we've parsed to avoid parsing a bucket twice that is
     // referenced from more than one layer
-    std::unordered_map<std::string, std::unique_ptr<Bucket>> buckets;
     std::unordered_set<std::string> parsed;
+    std::unordered_map<std::string, std::unique_ptr<Bucket>> buckets;
+    auto featureIndex = std::make_unique<FeatureIndex>();
 
-    for (auto i = layers.rbegin(); i != layers.rend(); i++) {
+    for (auto i = layers->rbegin(); i != layers->rend(); i++) {
         if (obsolete) {
-            break;
+            return;
         }
 
         const Layer* layer = i->get();
@@ -73,7 +88,11 @@ TileParseResult TileWorker::redoLayout(std::vector<std::unique_ptr<Layer>> layer
 
         parsed.emplace(bucketName);
 
-        auto geometryLayer = tileData->getLayer(layer->baseImpl->sourceLayer);
+        if (!*data) {
+            continue; // Tile has no data.
+        }
+
+        auto geometryLayer = (*data)->getLayer(layer->baseImpl->sourceLayer);
         if (!geometryLayer) {
             continue;
         }
@@ -98,22 +117,28 @@ TileParseResult TileWorker::redoLayout(std::vector<std::unique_ptr<Layer>> layer
         }
     }
 
-    return parsePendingLayers(config, std::move(buckets));
+    tile.invoke(&GeometryTile::onLayout, GeometryTile::LayoutResult {
+        std::move(buckets),
+        std::move(featureIndex),
+        *data ? (*data)->clone() : nullptr
+    });
+
+    attemptPlacement();
 }
 
-TileParseResult TileWorker::parsePendingLayers(const PlacementConfig& config) {
-    return parsePendingLayers(config, std::unordered_map<std::string, std::unique_ptr<Bucket>>());
-}
+void GeometryTileWorker::attemptPlacement() {
+    if (!data || !layers || !placementConfig) {
+        return;
+    }
 
-TileParseResult TileWorker::parsePendingLayers(const PlacementConfig& config,
-                                               std::unordered_map<std::string, std::unique_ptr<Bucket>> buckets) {
-    TileParseResultData result;
-
-    result.complete = true;
-    result.buckets = std::move(buckets);
+    bool canPlace = true;
 
     // Prepare as many SymbolLayouts as possible.
     for (auto& symbolLayout : symbolLayouts) {
+        if (obsolete) {
+            return;
+        }
+
         if (symbolLayout->state == SymbolLayout::Pending) {
             if (symbolLayout->canPrepare(glyphStore, spriteStore)) {
                 symbolLayout->state = SymbolLayout::Prepared;
@@ -121,50 +146,34 @@ TileParseResult TileWorker::parsePendingLayers(const PlacementConfig& config,
                                       glyphAtlas,
                                       glyphStore);
             } else {
-                result.complete = false;
+                canPlace = false;
             }
         }
     }
 
-    // If all SymbolLayouts are prepared, then perform placement. Otherwise, parsePendingLayers
-    // will eventually be re-run.
-    if (result.complete) {
-        TilePlacementResult placementResult = redoPlacement(config);
-
-        featureIndex->setCollisionTile(std::move(placementResult.collisionTile));
-
-        for (auto& bucket : placementResult.buckets) {
-            result.buckets.emplace(std::move(bucket));
-        }
-
-        result.featureIndex = std::move(featureIndex);
-        result.tileData = tileData->clone();
+    if (!canPlace) {
+        return;
     }
 
-    return std::move(result);
-}
-
-TilePlacementResult TileWorker::redoPlacement(const PlacementConfig& config) {
-    TilePlacementResult result;
-
-    result.collisionTile = std::make_unique<CollisionTile>(config);
+    auto collisionTile = std::make_unique<CollisionTile>(*placementConfig);
+    std::unordered_map<std::string, std::unique_ptr<Bucket>> buckets;
 
     for (auto& symbolLayout : symbolLayouts) {
-        if (symbolLayout->state == SymbolLayout::Pending) {
-            // Can't do placement until all layouts are prepared.
-            return result;
+        if (obsolete) {
+            return;
         }
-    }
 
-    for (auto& symbolLayout : symbolLayouts) {
         symbolLayout->state = SymbolLayout::Placed;
-        std::unique_ptr<Bucket> bucket = symbolLayout->place(*result.collisionTile);
+        std::unique_ptr<Bucket> bucket = symbolLayout->place(*collisionTile);
         if (bucket->hasData() || symbolLayout->hasSymbolInstances()) {
-            result.buckets.emplace(symbolLayout->bucketName, std::move(bucket));
+            buckets.emplace(symbolLayout->bucketName, std::move(bucket));
         }
     }
 
-    return result;
+    tile.invoke(&GeometryTile::onPlacement, GeometryTile::PlacementResult {
+        std::move(buckets),
+        std::move(collisionTile)
+    });
 }
 
 } // namespace mbgl
