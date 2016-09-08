@@ -29,7 +29,7 @@
         return { std::string([(NSString *)value UTF8String]) };
     } else if ([value isKindOfClass:NSNumber.class]) {
         NSNumber *number = (NSNumber *)value;
-        NSLog(@"NSNumber %@ (%s)", number, number.objCType);
+        NSLog(@"NSNumber %@ (%s)", number, [number objCType]);
 
         // 32/64-bit check based on CGFloat storage size
         // per https://developer.apple.com/library/ios/documentation/General/Conceptual/CocoaTouch64BitGuide/
@@ -38,8 +38,8 @@
         NSAssert((thirtyTwoBit || sixtyFourBit) && ! (thirtyTwoBit && sixtyFourBit), @"Fault in 32/64-bit determination");
         NSLog(@"Running in %@-bit mode", (thirtyTwoBit ? @"32" : @"64"));
 
-        if ((strcmp(number.objCType, @encode(char)) == 0) ||
-            (strcmp(number.objCType, @encode(BOOL)) == 0)) {
+        if ((strcmp([number objCType], @encode(char)) == 0) ||
+            (strcmp([number objCType], @encode(BOOL)) == 0)) {
             // char: 32-bit boolean
             // BOOL: 64-bit boolean
             return { (bool)number.boolValue };
