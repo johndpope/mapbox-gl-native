@@ -48,8 +48,8 @@
                    strcmp([number objCType], @encode(long))      == 0 ||
                    strcmp([number objCType], @encode(long long)) == 0 ||
                    strcmp([number objCType], @encode(NSInteger)) == 0) {
-            // In practice, all non-boolean whole numbers are converted to one
-            // of these types by NSExpression regardless of signedness.
+            // Triggered for most non-boolean whole numbers as converted
+            // by NSExpression regardless of signedness.
             return { (int64_t)number.integerValue };
         } else if (strcmp([number objCType], @encode(unsigned char))      == 0 ||
                    strcmp([number objCType], @encode(unsigned short))     == 0 ||
@@ -57,9 +57,7 @@
                    strcmp([number objCType], @encode(unsigned long))      == 0 ||
                    strcmp([number objCType], @encode(unsigned long long)) == 0 ||
                    strcmp([number objCType], @encode(NSUInteger))         == 0) {
-            // This code path does not seem to get run in current NSExpression
-            // implementations (even with e.g. [NSNumber numberWithLong:INT_MAX]),
-            // but is provided for completeness and safety.
+            // Triggered occasionally for very large numbers, e.g. NSUIntegerMax.
             return { (uint64_t)number.unsignedIntegerValue };
         } else if (strcmp([number objCType], @encode(double)) == 0) {
             // Double values are interpreted precisely on all platforms.
