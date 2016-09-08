@@ -12,6 +12,11 @@
             auto filter = mbgl::style::EqualsFilter();
             filter.key = self.leftExpression.keyPath.UTF8String;
             filter.value = self.rightExpression.mgl_filterValue;
+            NSLog(@"bool? %i", filter.value.is<bool>());
+            NSLog(@"int64_t? %i", filter.value.is<int64_t>());
+            NSLog(@"uint64_t? %i", filter.value.is<uint64_t>());
+            NSLog(@"double? %i", filter.value.is<double>());
+            NSLog(@"string? %i", filter.value.is<std::string>());
             return filter;
         }
         case NSNotEqualToPredicateOperatorType: {
