@@ -20,6 +20,7 @@
     source = [[MGLGeoJSONSource alloc] initWithSourceIdentifier:@"test-source" geoJSONData:geoJSONData];
     [self.mapView.style addSource:source];
     layer = [[MGLLineStyleLayer alloc] initWithLayerIdentifier:@"test-layer" sourceIdentifier:@"test-source"];
+    [self.mapView.style addLayer:layer];
 }
 
 - (void)tearDown
