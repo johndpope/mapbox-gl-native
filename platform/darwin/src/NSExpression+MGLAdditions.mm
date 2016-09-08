@@ -1,5 +1,7 @@
 #import "NSExpression+MGLAdditions.h"
 
+#import <CoreGraphics/CGBase.h>
+
 @implementation NSExpression (MGLAdditions)
 
 - (std::vector<mbgl::Value>)mgl_filterValues
@@ -27,37 +29,45 @@
         return { std::string([(NSString *)value UTF8String]) };
     } else if ([value isKindOfClass:NSNumber.class]) {
         NSNumber *number = (NSNumber *)value;
-        // handle all types defined in NSNumber designated initializers
-        if (strcmp([number objCType], @encode(char)) == 0) {
-            return { number.charValue };
-        } else if (strcmp([number objCType], @encode(unsigned char)) == 0) {
-            return { number.unsignedCharValue };
-        } else if (strcmp([number objCType], @encode(short)) == 0) {
-            return { number.shortValue };
-        } else if (strcmp([number objCType], @encode(unsigned short)) == 0) {
-            return { number.unsignedShortValue };
-        } else if (strcmp([number objCType], @encode(int)) == 0) {
-            return { number.intValue };
-        } else if (strcmp([number objCType], @encode(unsigned int)) == 0) {
-            return { number.unsignedIntValue };
-        } else if (strcmp([number objCType], @encode(long)) == 0) {
-            return { number.longValue };
-        } else if (strcmp([number objCType], @encode(unsigned long)) == 0) {
-            return { number.unsignedLongValue };
-        } else if (strcmp([number objCType], @encode(long long)) == 0) {
-            return { number.longLongValue };
-        } else if (strcmp([number objCType], @encode(unsigned long long)) == 0) {
-            return { number.unsignedLongLongValue };
-        } else if (strcmp([number objCType], @encode(float)) == 0) {
-            return { number.floatValue };
+
+        // 32/64-bit check based on CGFloat storage size
+        // per https://developer.apple.com/library/ios/documentation/General/Conceptual/CocoaTouch64BitGuide/
+        BOOL thirtyTwoBit = sizeof(CGFloat) == sizeof(float);
+        BOOL sixtyFourBit = sizeof(CGFloat) == sizeof(double);
+        NSAssert((thirtyTwoBit || sixtyFourBit) && ! (thirtyTwoBit && sixtyFourBit), @"Fault in 32/64-bit determination");
+
+        if ((strcmp(number.objCType, @encode(char)) == 0) ||
+            (strcmp(number.objCType, @encode(BOOL)) == 0)) {
+            // char: 32-bit boolean
+            // BOOL: 64-bit boolean
+            return { (bool)number.boolValue };
+        } else if (strcmp([number objCType], @encode(short))     == 0 ||
+                   strcmp([number objCType], @encode(int))       == 0 ||
+                   strcmp([number objCType], @encode(long))      == 0 ||
+                   strcmp([number objCType], @encode(long long)) == 0 ||
+                   strcmp([number objCType], @encode(NSInteger)) == 0) {
+            // In practice, all non-boolean whole numbers are converted to one
+            // of these types by NSExpression regardless of signedness.
+            return { (int64_t)number.integerValue };
+        } else if (strcmp([number objCType], @encode(unsigned char))      == 0 ||
+                   strcmp([number objCType], @encode(unsigned short))     == 0 ||
+                   strcmp([number objCType], @encode(unsigned int))       == 0 ||
+                   strcmp([number objCType], @encode(unsigned long))      == 0 ||
+                   strcmp([number objCType], @encode(unsigned long long)) == 0 ||
+                   strcmp([number objCType], @encode(NSUInteger))         == 0) {
+            // This code path does not seem to get run in current NSExpression
+            // implementations (even with e.g. [NSNumber numberWithLong:INT_MAX]),
+            // but is provided for completeness and safety.
+            return { (uint64_t)number.unsignedIntegerValue };
         } else if (strcmp([number objCType], @encode(double)) == 0) {
-            return { number.doubleValue };
-        } else if (strcmp([number objCType], @encode(bool)) == 0) {
-            return { number.boolValue };
-        } else if (strcmp([number objCType], @encode(NSInteger)) == 0) {
-            return { number.integerValue };
-        } else if (strcmp([number objCType], @encode(NSUInteger)) == 0) {
-            return { number.unsignedIntegerValue };
+            // Double values are interpreted precisely on all platforms.
+            return { (double)number.doubleValue };
+        } else if (thirtyTwoBit && strcmp([number objCType], @encode(float)) == 0) {
+            // Float values are converted to double on 32-bit platforms and
+            // introduce precision problems.
+            [NSException raise:@"Float values introduce imprecision on 32-bit systems"
+                        format:@"Float values are converted to double; please use double explicitly"];
+            return { };
         }
     }
     [NSException raise:@"Value not handled"
