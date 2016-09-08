@@ -172,88 +172,172 @@
 
 - (void)testExpressionConversionShort
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithShort:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithShort:-SHRT_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), -SHRT_MAX);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithShort:SHRT_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), SHRT_MAX);
+
 }
 
 - (void)testExpressionConversionInt
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInt:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInt:-INT_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), -INT_MAX);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInt:INT_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), INT_MAX);
 }
 
 - (void)testExpressionConversionLong
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLong:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLong:-LONG_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), -LONG_MAX);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLong:LONG_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), LONG_MAX);
 }
 
 - (void)testExpressionConversionLongLong
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLongLong:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLongLong:-LLONG_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), -LLONG_MAX);
 }
 
 - (void)testExpressionConversionInteger
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInteger:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInteger:-NSIntegerMax]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), -NSIntegerMax);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInteger:NSIntegerMax]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), NSIntegerMax);
 }
 
 - (void)testExpressionConversionUnsignedChar
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedChar:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedChar:0]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), 0);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedChar:CHAR_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), CHAR_MAX);
 }
 
 - (void)testExpressionConversionUnsignedShort
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedShort:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedShort:0]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), 0);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedShort:SHRT_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), SHRT_MAX);
 }
 
 - (void)testExpressionConversionUnsignedInt
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedInt:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedInt:0]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), 0);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedInt:INT_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), INT_MAX);
 }
 
 - (void)testExpressionConversionUnsignedLong
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedLong:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedLong:0]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), 0);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedLong:ULONG_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), ULONG_MAX);
 }
 
 - (void)testExpressionConversionUnsignedLongLong
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedLongLong:5]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedLongLong:0]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), 5);
+    XCTAssertEqual(convertedValue.get<int64_t>(), 0);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedLongLong:ULLONG_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), ULLONG_MAX);
 }
 
 - (void)testExpressionConversionUnsignedInteger
 {
-    NSComparisonPredicate *predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedInteger:NSUIntegerMax]];
-    mbgl::Value convertedValue = predicate.rightExpression.mgl_filterValue;
+    NSComparisonPredicate *predicate;
+    mbgl::Value convertedValue;
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedInteger:0]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<uint64_t>() == true);
+    XCTAssertEqual(convertedValue.get<uint64_t>(), 0);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithUnsignedInteger:NSUIntegerMax]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<uint64_t>() == true);
     XCTAssertEqual(convertedValue.get<uint64_t>(), NSUIntegerMax);
 }
