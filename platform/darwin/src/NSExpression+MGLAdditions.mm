@@ -1,5 +1,7 @@
 #import "NSExpression+MGLAdditions.h"
 
+#import <mbgl/platform/log.hpp>
+
 #import <CoreGraphics/CGBase.h>
 
 @implementation NSExpression (MGLAdditions)
@@ -60,14 +62,15 @@
             // Triggered occasionally for very large numbers, e.g. NSUIntegerMax.
             return { (uint64_t)number.unsignedIntegerValue };
         } else if (strcmp([number objCType], @encode(double)) == 0) {
-            // Double values are interpreted precisely on all platforms.
+            // Double values on all platforms are interpreted precisely.
             return { (double)number.doubleValue };
-        } else if (thirtyTwoBit && strcmp([number objCType], @encode(float)) == 0) {
-            // Float values are converted to double on 32-bit platforms and
-            // introduce precision problems.
-            [NSException raise:@"Float values introduce imprecision on 32-bit systems"
-                        format:@"Float values are converted to double; please use double explicitly"];
-            return { };
+        } else if (strcmp([number objCType], @encode(float)) == 0) {
+            // Float values when taken as double introduce precision problems,
+            // so warn the user to avoid them. This would require them to
+            // explicitly use -[NSNumber numberWithFloat:] arguments anyway.
+            // We still do this conversion in order to provide a valid value.
+            mbgl::Log::Warning(mbgl::Event::Style, "float values are converted to double and can introduce imprecision; please use double values explicitly in predicate arguments");
+            return { (double)number.doubleValue };
         }
     }
     [NSException raise:@"Value not handled"
