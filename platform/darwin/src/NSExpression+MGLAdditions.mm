@@ -51,7 +51,8 @@
                    strcmp([number objCType], @encode(long long)) == 0 ||
                    strcmp([number objCType], @encode(NSInteger)) == 0) {
             // Triggered for most non-boolean whole numbers as converted
-            // by NSExpression regardless of signedness.
+            // by NSExpression regardless of signedness. NSNumber seems
+            // to try to save space where possible.
             return { (int64_t)number.integerValue };
         } else if (strcmp([number objCType], @encode(unsigned char))      == 0 ||
                    strcmp([number objCType], @encode(unsigned short))     == 0 ||
@@ -59,7 +60,8 @@
                    strcmp([number objCType], @encode(unsigned long))      == 0 ||
                    strcmp([number objCType], @encode(unsigned long long)) == 0 ||
                    strcmp([number objCType], @encode(NSUInteger))         == 0) {
-            // Triggered occasionally for very large numbers, e.g. NSUIntegerMax.
+            // Triggered for very large numbers, e.g. NSUIntegerMax. Handling
+            // all unsigned types here anyway for consistency. 
             return { (uint64_t)number.unsignedIntegerValue };
         } else if (strcmp([number objCType], @encode(double)) == 0) {
             // Double values on all platforms are interpreted precisely.
