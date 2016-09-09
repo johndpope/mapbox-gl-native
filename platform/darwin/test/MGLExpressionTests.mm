@@ -49,10 +49,10 @@
     NSComparisonPredicate *predicate;
     mbgl::Value convertedValue;
 
-    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithShort:-SHRT_MAX]];
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithShort:SHRT_MIN]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), -SHRT_MAX);
+    XCTAssertEqual(convertedValue.get<int64_t>(), SHRT_MIN);
 
     predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithShort:SHRT_MAX]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
@@ -66,10 +66,10 @@
     NSComparisonPredicate *predicate;
     mbgl::Value convertedValue;
 
-    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInt:-INT_MAX]];
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInt:INT_MIN]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), -INT_MAX);
+    XCTAssertEqual(convertedValue.get<int64_t>(), INT_MIN);
 
     predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInt:INT_MAX]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
@@ -82,10 +82,10 @@
     NSComparisonPredicate *predicate;
     mbgl::Value convertedValue;
 
-    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLong:-LONG_MAX]];
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLong:LONG_MIN]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), -LONG_MAX);
+    XCTAssertEqual(convertedValue.get<int64_t>(), LONG_MIN);
 
     predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLong:LONG_MAX]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
@@ -98,10 +98,15 @@
     NSComparisonPredicate *predicate;
     mbgl::Value convertedValue;
 
-    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLongLong:-LLONG_MAX]];
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLongLong:LLONG_MIN]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), -LLONG_MAX);
+    XCTAssertEqual(convertedValue.get<int64_t>(), LLONG_MIN);
+
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithLongLong:LLONG_MAX]];
+    convertedValue = predicate.rightExpression.mgl_filterValue;
+    XCTAssert(convertedValue.is<int64_t>() == true);
+    XCTAssertEqual(convertedValue.get<int64_t>(), LLONG_MAX);
 }
 
 - (void)testExpressionConversionInteger
@@ -109,10 +114,10 @@
     NSComparisonPredicate *predicate;
     mbgl::Value convertedValue;
 
-    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInteger:-NSIntegerMax]];
+    predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInteger:NSIntegerMin]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
     XCTAssert(convertedValue.is<int64_t>() == true);
-    XCTAssertEqual(convertedValue.get<int64_t>(), -NSIntegerMax);
+    XCTAssertEqual(convertedValue.get<int64_t>(), NSIntegerMin);
 
     predicate = [self equalityComparisonPredicateWithRightConstantValue:[NSNumber numberWithInteger:NSIntegerMax]];
     convertedValue = predicate.rightExpression.mgl_filterValue;
