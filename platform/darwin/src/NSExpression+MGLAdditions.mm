@@ -2,8 +2,6 @@
 
 #import <mbgl/platform/log.hpp>
 
-#import <CoreGraphics/CGBase.h>
-
 @implementation NSExpression (MGLAdditions)
 
 - (std::vector<mbgl::Value>)mgl_filterValues
@@ -31,15 +29,6 @@
         return { std::string([(NSString *)value UTF8String]) };
     } else if ([value isKindOfClass:NSNumber.class]) {
         NSNumber *number = (NSNumber *)value;
-        NSLog(@"NSNumber %@ (%s)", number, [number objCType]);
-
-        // 32/64-bit check based on CGFloat storage size
-        // per https://developer.apple.com/library/ios/documentation/General/Conceptual/CocoaTouch64BitGuide/
-        BOOL thirtyTwoBit = sizeof(CGFloat) == sizeof(float);
-        BOOL sixtyFourBit = sizeof(CGFloat) == sizeof(double);
-        NSAssert((thirtyTwoBit || sixtyFourBit) && ! (thirtyTwoBit && sixtyFourBit), @"Fault in 32/64-bit determination");
-        NSLog(@"Running in %@-bit mode", (thirtyTwoBit ? @"32" : @"64"));
-
         if ((strcmp([number objCType], @encode(char)) == 0) ||
             (strcmp([number objCType], @encode(BOOL)) == 0)) {
             // char: 32-bit boolean
@@ -61,7 +50,7 @@
                    strcmp([number objCType], @encode(unsigned long long)) == 0 ||
                    strcmp([number objCType], @encode(NSUInteger))         == 0) {
             // Triggered for very large numbers, e.g. NSUIntegerMax. Handling
-            // all unsigned types here anyway for consistency. 
+            // all unsigned types here anyway for consistency.
             return { (uint64_t)number.unsignedIntegerValue };
         } else if (strcmp([number objCType], @encode(double)) == 0) {
             // Double values on all platforms are interpreted precisely.
