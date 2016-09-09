@@ -23,7 +23,7 @@ public class ConnectivityReceiver extends BroadcastReceiver {
     public static synchronized ConnectivityReceiver instance(Context context) {
         if (INSTANCE == null) {
             //Register new instance
-            INSTANCE = new ConnectivityReceiver(context);
+            INSTANCE = new ConnectivityReceiver();
             context.registerReceiver(INSTANCE, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
             //Add default listeners
@@ -33,39 +33,28 @@ public class ConnectivityReceiver extends BroadcastReceiver {
         return INSTANCE;
     }
 
-    private final Context context;
-    private List<WeakReference<ConnectivityListener>> listeners = new CopyOnWriteArrayList<>();
+    private List<ConnectivityListener> listeners = new CopyOnWriteArrayList<>();
 
 
-    private ConnectivityReceiver(Context context) {
-        this.context = context;
+    private ConnectivityReceiver() {
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        boolean connected = isConnected();
+        boolean connected = isConnected(context);
         Log.v(TAG, "Connected: " + connected);
 
-        //Loop over listeners, collecting stale references as we go
-        List<WeakReference<ConnectivityListener>> removals = new ArrayList<>();
-        for (WeakReference<ConnectivityListener> ref : listeners) {
-            ConnectivityListener listener = ref.get();
-            if (listener != null) {
-                listener.onNetworkStateChanged(connected);
-            } else {
-                removals.add(ref);
-            }
+        //Loop over listeners
+        for (ConnectivityListener listener : listeners) {
+            listener.onNetworkStateChanged(connected);
         }
-
-        //Cleanup
-        listeners.removeAll(removals);
     }
 
     public void addListener(ConnectivityListener listener) {
-        listeners.add(new WeakReference<>(listener));
+        listeners.add(listener);
     }
 
-    public boolean isConnected() {
+    public boolean isConnected(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return (activeNetwork != null && activeNetwork.isConnected());
