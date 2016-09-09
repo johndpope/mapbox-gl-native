@@ -49,7 +49,7 @@ public:
 
     // Notifies the Map that the state has changed and an update might be necessary.
     void update(Update update);
-
+    
     // Styling
     void addClass(const std::string&, const style::TransitionOptions& = {});
     void removeClass(const std::string&, const style::TransitionOptions& = {});

@@ -1,6 +1,7 @@
 #include <mbgl/util/mapbox.hpp>
 #include <mbgl/util/constants.hpp>
 #include <mbgl/platform/log.hpp>
+#include <mbgl/util/config.hpp>
 
 #include <stdexcept>
 #include <vector>
@@ -11,8 +12,7 @@ namespace util {
 namespace mapbox {
 
 const std::string protocol = "mapbox://";
-const std::string baseURL = "https://api.mapbox.com/";
-
+    
 bool isMapboxURL(const std::string& url) {
     return std::equal(protocol.begin(), protocol.end(), url.begin());
 }
@@ -35,7 +35,7 @@ std::vector<std::string> getMapboxURLPathname(const std::string& url) {
     return pathname;
 }
 
-std::string normalizeSourceURL(const std::string& url, const std::string& accessToken) {
+std::string normalizeSourceURL(const std::string& baseURL, const std::string& url, const std::string& accessToken) {
     if (!isMapboxURL(url)) {
         return url;
     }
@@ -43,11 +43,10 @@ std::string normalizeSourceURL(const std::string& url, const std::string& access
     if (accessToken.empty()) {
         throw std::runtime_error("You must provide a Mapbox API access token for Mapbox tile sources");
     }
-
     return baseURL + "v4/" + url.substr(protocol.length()) + ".json?access_token=" + accessToken + "&secure";
 }
 
-std::string normalizeStyleURL(const std::string& url, const std::string& accessToken) {
+std::string normalizeStyleURL(const std::string& baseURL, const std::string& url, const std::string& accessToken) {
     if (!isMapboxURL(url)) {
         return url;
     }
@@ -64,7 +63,7 @@ std::string normalizeStyleURL(const std::string& url, const std::string& accessT
     return baseURL + "styles/v1/" + user + "/" + id + (isDraft ? "/draft" : "") + "?access_token=" + accessToken;
 }
 
-std::string normalizeSpriteURL(const std::string& url, const std::string& accessToken) {
+std::string normalizeSpriteURL(const std::string& baseURL, const std::string& url, const std::string& accessToken) {
     if (!isMapboxURL(url)) {
         return url;
     }
@@ -98,7 +97,7 @@ std::string normalizeSpriteURL(const std::string& url, const std::string& access
     }
 }
 
-std::string normalizeGlyphsURL(const std::string& url, const std::string& accessToken) {
+std::string normalizeGlyphsURL(const std::string& baseURL, const std::string& url, const std::string& accessToken) {
     if (!isMapboxURL(url)) {
         return url;
     }
@@ -116,7 +115,7 @@ std::string normalizeGlyphsURL(const std::string& url, const std::string& access
     return baseURL + "fonts/v1/" + user + "/" + fontstack + "/" + range + "?access_token=" + accessToken;
 }
 
-std::string normalizeTileURL(const std::string& url, const std::string& accessToken) {
+std::string normalizeTileURL(const std::string& baseURL, const std::string& url, const std::string& accessToken) {
     if (!isMapboxURL(url)) {
         return url;
     }

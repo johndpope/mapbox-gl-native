@@ -878,6 +878,15 @@ public class MapView extends FrameLayout {
     }
 
     //
+    // API Base URL
+    //
+
+    @UiThread
+    public void setApiBaseUrl(@NonNull String baseUrl) {
+        mNativeMapView.setApiBaseUrl(baseUrl);
+    }
+
+    //
     // Access token
     //
 

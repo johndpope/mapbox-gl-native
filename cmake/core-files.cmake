@@ -250,6 +250,7 @@ set(MBGL_CORE_FILES
     src/mbgl/style/tile_source_impl.cpp
     src/mbgl/style/tile_source_impl.hpp
     src/mbgl/style/types.cpp
+    src/mbgl/style/update_batch.hpp
     src/mbgl/style/update_parameters.hpp
 
     # style/conversion
@@ -375,6 +376,7 @@ set(MBGL_CORE_FILES
     include/mbgl/util/chrono.hpp
     include/mbgl/util/color.hpp
     include/mbgl/util/compression.hpp
+    include/mbgl/util/config.hpp
     include/mbgl/util/constants.hpp
     include/mbgl/util/convert.hpp
     include/mbgl/util/default_styles.hpp

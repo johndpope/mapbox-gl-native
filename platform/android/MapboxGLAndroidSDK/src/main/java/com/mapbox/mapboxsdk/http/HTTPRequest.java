@@ -65,6 +65,8 @@ class HTTPRequest implements Callback {
                 resourceUrl = resourceUrl + "events=true";
             }
 
+            Log.v(MapboxConstants.TAG, "URL " + resourceUrl);
+
             Request.Builder builder = new Request.Builder().url(resourceUrl).tag(resourceUrl.toLowerCase(MapboxConstants.MAPBOX_LOCALE)).addHeader("User-Agent", userAgent);
             if (etag.length() > 0) {
                 builder = builder.addHeader("If-None-Match", etag);
