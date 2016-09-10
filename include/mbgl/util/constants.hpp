@@ -43,7 +43,7 @@ constexpr Seconds CLOCK_SKEW_RETRY_TIMEOUT { 30 };
 
 constexpr UnitBezier DEFAULT_TRANSITION_EASE = { 0, 0, 0.25, 1 };
 
-const std::string& API_BASE_URL = "https://api.mapbox.com/";
+constexpr const char* API_BASE_URL = "https://api.mapbox.com/";
     
 } // namespace util
 

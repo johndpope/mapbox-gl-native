@@ -1,7 +1,6 @@
 #include <mbgl/util/mapbox.hpp>
 #include <mbgl/util/constants.hpp>
 #include <mbgl/platform/log.hpp>
-#include <mbgl/util/config.hpp>
 
 #include <stdexcept>
 #include <vector>
@@ -43,6 +42,7 @@ std::string normalizeSourceURL(const std::string& baseURL, const std::string& ur
     if (accessToken.empty()) {
         throw std::runtime_error("You must provide a Mapbox API access token for Mapbox tile sources");
     }
+    
     return baseURL + "v4/" + url.substr(protocol.length()) + ".json?access_token=" + accessToken + "&secure";
 }
 

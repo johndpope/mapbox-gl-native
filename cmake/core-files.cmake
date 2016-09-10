@@ -376,7 +376,6 @@ set(MBGL_CORE_FILES
     include/mbgl/util/chrono.hpp
     include/mbgl/util/color.hpp
     include/mbgl/util/compression.hpp
-    include/mbgl/util/config.hpp
     include/mbgl/util/constants.hpp
     include/mbgl/util/convert.hpp
     include/mbgl/util/default_styles.hpp

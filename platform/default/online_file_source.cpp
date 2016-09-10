@@ -152,6 +152,10 @@ OnlineFileSource::~OnlineFileSource() = default;
 
 std::unique_ptr<AsyncRequest> OnlineFileSource::request(const Resource& resource, Callback callback) {
     Resource res = resource;
+    
+    if(apiBaseURL.empty()){
+        apiBaseURL = mbgl::util::API_BASE_URL;
+    }
 
     switch (resource.kind) {
     case Resource::Kind::Unknown:
