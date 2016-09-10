@@ -1,7 +1,5 @@
 #import "NSExpression+MGLAdditions.h"
 
-#import <mbgl/platform/log.hpp>
-
 @implementation NSExpression (MGLAdditions)
 
 - (std::vector<mbgl::Value>)mgl_filterValues
@@ -60,7 +58,10 @@
             // so warn the user to avoid them. This would require them to
             // explicitly use -[NSNumber numberWithFloat:] arguments anyway.
             // We still do this conversion in order to provide a valid value.
-            mbgl::Log::Warning(mbgl::Event::Style, "float values are converted to double and can introduce imprecision; please use double values explicitly in predicate arguments");
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                NSLog(@"Float values are converted to double and can introduce imprecision; please use double values explicitly in predicate arguments.");
+            });
             return { (double)number.doubleValue };
         }
     }
